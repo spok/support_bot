@@ -5,6 +5,10 @@ LEXICON: dict[str, str] = {
     'input_id': 'Введите идентификатор нового чата',
     'input_name': 'Введите название этого чата',
     'select_workspace': 'Выберите воркспейс чата',
+    'selected_workspace': 'Выбран воркспейс:\n',
+    'select_course': 'Выберите курс чата',
+    'selected_course': 'Выбран курс:\n',
+    'add_chat_message': 'Добавлени новый курс:\n',
     # Сообщения администратраторов
     'select_action_admins': 'Выберите действия с администраторами',
     'input_id_admin': 'Для добавления нового администратора введите его идентификатор Telegram',
@@ -28,7 +32,7 @@ LEXICON: dict[str, str] = {
     'select_del_workspace': 'Выберите курс для удаления',
     'del_workspace_message': 'Был удален курс:\n',
 
-    'action_canceled': 'Операция завершена.',
+    'action_canceled': 'Операция отменена.',
 
     # Текст в клавиатурах
     'cancel': '❌Отменить',

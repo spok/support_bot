@@ -46,7 +46,7 @@ async def chat_message_id(callback: CallbackQuery, state: FSMContext):
 
 # Хэндлер для обработки введенного идентификатора чата
 @router.message(StateFilter(FSMAddChats.add_id), F.from_user.id.in_(bot_db.get_admins_id()), F.text.isdigit())
-async def menu_chats(message: Message, state: FSMContext):
+async def chat_add_id(message: Message, state: FSMContext):
     # Cохраняем введенный идентификатор по ключу "id"
     await state.update_data(id=int(message.text))
     await message.answer(text=LEXICON['input_name'], reply_markup=kb.kb_cancel())
@@ -56,21 +56,54 @@ async def menu_chats(message: Message, state: FSMContext):
 
 # Хэндлер для обработки введенного названия чата
 @router.message(StateFilter(FSMAddChats.add_name), F.from_user.id.in_(bot_db.get_admins_id()))
-async def menu_chats(message: Message, state: FSMContext):
+async def chat_add_name(message: Message, state: FSMContext):
     # Cохраняем введенный названия по ключу "name"
     await state.update_data(name=message.text)
-    markup = kb.kb_select_workspace(bot_db.get_workspaces())
+    markup = kb.kb_select_workspace(bot_db.workspaces)
     await message.answer(text=LEXICON['select_workspace'], reply_markup=markup)
     # Переходим в состояние выбора воркспейса
     await state.set_state(FSMAddChats.select_workspace)
 
 
-# Этот хэндлер будет срабатывать на команду "/cancel" в любых состояниях,
-# кроме состояния по умолчанию, и отключать машину состояний
-@router.message(Command(commands='cancel'), ~StateFilter(default_state))
-async def process_cancel_command_state(message: Message, state: FSMContext):
-    await message.answer(
-        text=LEXICON['action_canceled']
-    )
-    # Сбрасываем состояние и очищаем данные, полученные внутри состояний
+# Хэндлер для обработки выбранного воркспейса
+@router.message(StateFilter(FSMAddChats.select_workspace), F.from_user.id.in_(bot_db.get_admins_id()))
+async def chat_add_course(callback: CallbackQuery, state: FSMContext):
+    workspace_name = callback.data
+    # Cохраняем выбранный воркспейс
+    await state.update_data(workspace=workspace_name)
+    await callback.message.delete()
+    if workspace_name != "cancel":
+        new_text = LEXICON['selected_workspace'] + f'*{workspace_name}*'
+        await callback.message.answer(text=new_text, parse_mode='MarkdownV2')
+        await callback.message.answer(text=LEXICON['select_course'], reply_markup=kb.kb_select_course(bot_db.courses))
+        # Переходим в состояние выбора курса
+        await state.set_state(FSMAddChats.select_course)
+    else:
+        # Выходим из состояния
+        await state.clear()
+
+
+# Хэндлер для обработки выбранного воркспейса
+@router.message(StateFilter(FSMAddChats.select_course), F.from_user.id.in_(bot_db.get_admins_id()))
+async def chat_save_in_db(callback: CallbackQuery, state: FSMContext):
+    course_name = callback.data
+    # Сохраняем чат в базе данных
+    data = await state.get_data()
+    id_chat = data.get("id")
+    name_chat = data.get("name")
+    workspace_name = data.get("workspace")
+    bot_db.add_chats(id=id_chat, name=name_chat, workspace=workspace_name, course=course_name)
+    await callback.message.delete()
+    if course_name != "cancel":
+        new_text = LEXICON['selected_course'] + f'*{course_name}*'
+        await callback.message.answer(text=new_text, parse_mode='MarkdownV2')
+        new_text2 = LEXICON['add_chat_message']
+        new_text2 += f'Название - *{name_chat}*'
+        new_text2 += f'ID - *{id_chat}*'
+        new_text2 += f'Воркспейс - *{workspace_name}*'
+        new_text2 += f'Курс - *{course_name}*'
+        await callback.message.answer(text=new_text2, parse_mode='MarkdownV2')
+    else:
+        await callback.message.answer(text=LEXICON['action_canceled'])
+    # Выходим из состояния
     await state.clear()
