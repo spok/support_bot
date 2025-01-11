@@ -5,18 +5,28 @@ LEXICON: dict[str, str] = {
     'input_id': 'Введите идентификатор нового чата',
     'input_name': 'Введите название этого чата',
     'select_workspace': 'Выберите воркспейс чата',
+    # Сообщения администратраторов
     'select_action_admins': 'Выберите действия с администраторами',
     'input_id_admin': 'Для добавления нового администратора введите его идентификатор Telegram',
     'input_name_admin': 'Введите имя администратора',
     'add_admin_message': 'Добавлен новый администратора\n',
     'select_del_admin_message': 'Выберите администратора для удаления',
     'del_admin_message': 'Удален администратор:\n',
+    'wrong_message_menu': 'Необходимо выбрать кнопку в меню',
+    # Сообщения курсов
     'select_action_course': 'Выберите действие с курсами',
     'input_course_name': 'Для добавления нового курса введите его название',
     'course_exists': 'Такой курс уже есть в базе данных',
     'add_course_message': 'Добавлен новый курс:\n',
     'select_del_course': 'Выберите курс для удаления',
     'del_course_message': 'Был удален курс:\n',
+    # Сообщения воркспейсов
+    'select_action_workspace': 'Выберите действие с воркспейсами',
+    'input_workspace_name': 'Для добавления нового воркспейса введите его название',
+    'workspace_exists': 'Такой воркспейс уже есть в базе данных',
+    'add_workspace_message': 'Добавлен новый курс:\n',
+    'select_del_workspace': 'Выберите курс для удаления',
+    'del_workspace_message': 'Был удален курс:\n',
 
     'action_canceled': 'Операция завершена.',
 

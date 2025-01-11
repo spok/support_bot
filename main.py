@@ -6,7 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from config_data.config import Config, load_config
-from handlers import other_handlers, user_handlers
+from handlers import send_handlers, chats_handlers, admins_handlers, course_handlers, workspace_handlers, other_handlers
 from keyboards.main_menu import set_main_menu
 
 # Инициализируем логгер
@@ -41,8 +41,12 @@ async def main():
     await set_main_menu(bot)
 
     # Регистрируем роутеры в диспетчере
-    dp.include_router(user_handlers.router)
-#    dp.include_router(other_handlers.router)
+    dp.include_router(send_handlers.router)
+    dp.include_router(admins_handlers.router)
+    dp.include_router(course_handlers.router)
+    dp.include_router(workspace_handlers.router)
+    dp.include_router(chats_handlers.router)
+    dp.include_router(other_handlers.router)
 
     # Пропускаем накопившиеся апдейты и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)

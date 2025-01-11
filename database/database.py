@@ -17,10 +17,26 @@ class Db:
         pass
         self.save_db()
 
-    def add_workspaces(self):
+    def add_workspaces(self, name: str):
         """Добавление воркспейса"""
-        pass
+        if name not in self.workspaces:
+            self.workspaces.append(name)
         self.save_db()
+
+    def del_workspace(self, name: str):
+        """Удаление воркспейса"""
+        try:
+            self.workspaces.remove(name)
+        except:
+            print("Удяляемый воркспейс отсутсвует в базе данных")
+        self.save_db()
+
+    def check_workspace(self, name: str) -> bool:
+        """Проверка воркспейса на наличие в базе данных"""
+        for elem in self.workspaces:
+            if name == elem:
+                return True
+        return False
 
     def add_course(self, name: str):
         """Добавление курса"""
@@ -101,7 +117,6 @@ class Db:
             for id in save_dict["admins"]:
                 new_id = int(id)
                 self.admins[new_id] = {"name": save_dict["admins"][id]["name"]}
-
         except:
             print("Ошибка при загрузке файла с базой данных")
 
