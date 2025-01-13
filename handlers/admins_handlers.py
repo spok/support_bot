@@ -104,10 +104,9 @@ async def cancel_admin_menu(callback: CallbackQuery, state: FSMContext):
 # Хендлер для обработки нажатия кнопки отмены при вводе данных админа
 @router.callback_query(StateFilter(FSMAddAdmin.add_id, FSMAddAdmin.add_name),
                        F.from_user.id.in_(bot_db.get_admins_id()), F.data.in_(['cancel']))
-async def cancel_admin_menu(callback: CallbackQuery, state: FSMContext):
+async def cancel_other(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         text=callback.message.text + " ")
-
     #await callback.message.delete()
     await callback.message.answer(text='Добавление администратора отменено.')
     await state.clear()

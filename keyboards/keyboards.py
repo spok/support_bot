@@ -27,12 +27,13 @@ def kb_select_workspace(work: set[str]) -> InlineKeyboardMarkup:
         callback_data='any'
     )
     keyboard.append([any_workspace])
-    for w in work:
-        keyboard.append([InlineKeyboardButton(
-            text= w,
-            callback_data= w
-        )])
-    keyboard[0].append([kb_cancel_button()])
+    if type(work) == set and len(work) > 0:
+        for w in work:
+            keyboard.append([InlineKeyboardButton(
+                text= w,
+                callback_data= w
+            )])
+    keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -45,11 +46,12 @@ def kb_select_course(courses: set[str]) -> InlineKeyboardMarkup:
         callback_data='any'
     )
     keyboard.append([any_courses])
-    for course in courses:
-        keyboard.append([InlineKeyboardButton(
-            text= course,
-            callback_data= course
-        )])
+    if len(courses) > 0:
+        for course in courses:
+            keyboard.append([InlineKeyboardButton(
+                text= course,
+                callback_data= course
+            )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

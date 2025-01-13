@@ -8,7 +8,7 @@ LEXICON: dict[str, str] = {
     'selected_workspace': 'Выбран воркспейс:\n',
     'select_course': 'Выберите курс чата',
     'selected_course': 'Выбран курс:\n',
-    'add_chat_message': 'Добавлени новый курс:\n',
+    'add_chat_message': 'Добавлен новый чат:\n',
     # Сообщения администратраторов
     'select_action_admins': 'Выберите действия с администраторами',
     'input_id_admin': 'Для добавления нового администратора введите его идентификатор Telegram',
@@ -28,9 +28,9 @@ LEXICON: dict[str, str] = {
     'select_action_workspace': 'Выберите действие с воркспейсами',
     'input_workspace_name': 'Для добавления нового воркспейса введите его название',
     'workspace_exists': 'Такой воркспейс уже есть в базе данных',
-    'add_workspace_message': 'Добавлен новый курс:\n',
-    'select_del_workspace': 'Выберите курс для удаления',
-    'del_workspace_message': 'Был удален курс:\n',
+    'add_workspace_message': 'Добавлен новый воркспейс:\n',
+    'select_del_workspace': 'Выберите воркспейс для удаления',
+    'del_workspace_message': 'Был удален воркспейс:\n',
 
     'action_canceled': 'Операция отменена.',
 

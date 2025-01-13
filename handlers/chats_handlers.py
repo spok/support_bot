@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
-from aiogram.types import (CallbackQuery, Message, ReplyKeyboardRemove)
+from aiogram.types import (CallbackQuery, Message)
 from database.database import bot_db
 from lexicon.lexicon import LEXICON
 import keyboards.keyboards as kb
@@ -59,14 +59,14 @@ async def chat_add_id(message: Message, state: FSMContext):
 async def chat_add_name(message: Message, state: FSMContext):
     # Cохраняем введенный названия по ключу "name"
     await state.update_data(name=message.text)
-    markup = kb.kb_select_workspace(bot_db.workspaces)
+    markup = kb.kb_select_workspace(bot_db.get_workspaces)
     await message.answer(text=LEXICON['select_workspace'], reply_markup=markup)
     # Переходим в состояние выбора воркспейса
     await state.set_state(FSMAddChats.select_workspace)
 
 
 # Хэндлер для обработки выбранного воркспейса
-@router.message(StateFilter(FSMAddChats.select_workspace), F.from_user.id.in_(bot_db.get_admins_id()))
+@router.callback_query(StateFilter(FSMAddChats.select_workspace))
 async def chat_add_course(callback: CallbackQuery, state: FSMContext):
     workspace_name = callback.data
     # Cохраняем выбранный воркспейс
@@ -84,7 +84,7 @@ async def chat_add_course(callback: CallbackQuery, state: FSMContext):
 
 
 # Хэндлер для обработки выбранного воркспейса
-@router.message(StateFilter(FSMAddChats.select_course), F.from_user.id.in_(bot_db.get_admins_id()))
+@router.callback_query(StateFilter(FSMAddChats.select_course))
 async def chat_save_in_db(callback: CallbackQuery, state: FSMContext):
     course_name = callback.data
     # Сохраняем чат в базе данных
@@ -97,12 +97,12 @@ async def chat_save_in_db(callback: CallbackQuery, state: FSMContext):
     if course_name != "cancel":
         new_text = LEXICON['selected_course'] + f'*{course_name}*'
         await callback.message.answer(text=new_text, parse_mode='MarkdownV2')
-        new_text2 = LEXICON['add_chat_message']
-        new_text2 += f'Название - *{name_chat}*'
-        new_text2 += f'ID - *{id_chat}*'
-        new_text2 += f'Воркспейс - *{workspace_name}*'
-        new_text2 += f'Курс - *{course_name}*'
-        await callback.message.answer(text=new_text2, parse_mode='MarkdownV2')
+        new_text = LEXICON['add_chat_message']
+        new_text += f'Название  *{name_chat}*\n'
+        new_text += f'ID  *{id_chat}*\n'
+        new_text += f'Воркспейс  *{workspace_name}*\n'
+        new_text += f'Курс  *{course_name}*\n'
+        await callback.message.answer(text=new_text, parse_mode='MarkdownV2')
     else:
         await callback.message.answer(text=LEXICON['action_canceled'])
     # Выходим из состояния
