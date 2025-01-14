@@ -28,7 +28,7 @@ class Db:
             # создание таблицы с воркспейсами
             create_table_query = """CREATE TABLE IF NOT EXISTS workspaces
                                   (ID                INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                                  author             TEXT    NOT NULL);"""
+                                  name             TEXT    NOT NULL);"""
             cursor.execute(create_table_query)
             conn.commit()
             # создание таблицы с курсами

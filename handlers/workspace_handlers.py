@@ -25,7 +25,23 @@ class FSMAddWorkspace(StatesGroup):
 # Хэндлер для обработки входа в меню управления воркспейсами
 @router.message(Command(commands='workspaces'), F.from_user.id.in_(bot_db.get_admins_id()), StateFilter(default_state))
 async def menu_workspace(message: Message, state: FSMContext):
-    await message.answer(text=LEXICON['select_action_workspace'], reply_markup=kb.kb_menu_course())
+    await message.answer(text=LEXICON['select_action_workspace'], reply_markup=kb.kb_menu_workspace())
+    # Переходим в состояние меню чата
+    await state.set_state(FSMAddWorkspace.select_action)
+
+
+# Хендлер для обработки нажатия кнопки отмены в меню чатов
+@router.callback_query(StateFilter(FSMAddWorkspace.select_action),
+                       F.from_user.id.in_(bot_db.get_admins_id()), F.data.in_(['cancel']))
+async def cancel_workspace_menu(callback: CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    await state.clear()
+
+
+# Хэндлер для обработки ввода текста при активном меню чата
+@router.message(StateFilter(FSMAddWorkspace.select_action), F.from_user.id.in_(bot_db.get_admins_id()))
+async def cancel_menu_workspace(message: Message, state: FSMContext):
+    await message.answer(text=LEXICON['wrong_message_menu'])
     # Переходим в состояние меню чата
     await state.set_state(FSMAddWorkspace.select_action)
 
@@ -36,7 +52,7 @@ async def menu_workspace(message: Message, state: FSMContext):
 async def get_workspace_name(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
     await callback.message.answer(text=LEXICON['input_workspace_name'], reply_markup=kb.kb_cancel())
-    # Устанавливаем состояние ожидания ввода названия курса
+    # Устанавливаем состояние ожидания ввода названия воркспейса
     await state.set_state(FSMAddWorkspace.add_name)
 
 
@@ -57,18 +73,17 @@ async def add_workspace(message: Message, state: FSMContext):
     await state.clear()
 
 
-# Хендлер для обработки удаления курса
+# Хендлер для обработки удаления воркспейса
 @router.callback_query(StateFilter(FSMAddWorkspace.select_action), F.from_user.id.in_(bot_db.get_admins_id()),
                 F.data.in_(['del_workspace']))
 async def select_del_workspace(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
     markup = kb.kb_delete_workspace(bot_db.workspaces)
     await callback.message.answer(text=LEXICON['select_del_workspace'], reply_markup=markup)
-    # Устанавливаем состояние ожидания удаления курса
     await state.set_state(FSMAddWorkspace.del_workspace)
 
 
-# Хендлер для удаления администратора
+# Хендлер для удаления воркспейса
 @router.callback_query(StateFilter(FSMAddWorkspace.del_workspace), F.from_user.id.in_(bot_db.get_admins_id()))
 async def del_workspace(callback: CallbackQuery, state: FSMContext):
     workspace_name = callback.data
@@ -88,3 +103,12 @@ async def menu_workspace(message: Message, state: FSMContext):
     await message.answer(text=LEXICON['wrong_message_menu'])
     # Переходим в состояние меню чата
     await state.set_state(FSMAddWorkspace.select_action)
+
+
+# Хендлер для обработки нажатия кнопки отмены при вводе данных чата
+@router.callback_query(StateFilter(FSMAddWorkspace.add_name),
+                       F.from_user.id.in_(bot_db.get_admins_id()), F.data.in_(['cancel']))
+async def cancel_other(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(text=callback.message.text + " ")
+    await callback.message.answer(text=LEXICON['cancel_other'])
+    await state.clear()
