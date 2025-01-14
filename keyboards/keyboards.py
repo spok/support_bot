@@ -64,7 +64,7 @@ def kb_select_chat(chats: set[str]) -> InlineKeyboardMarkup:
         text= LEXICON['all_select'],
         callback_data='all_select'
     )
-    keyboard[0].append([all_select])
+    keyboard.append([all_select])
     for chat in chats:
         keyboard.append([InlineKeyboardButton(
             text= '➕' + chat,
@@ -79,8 +79,8 @@ def kb_select_chat(chats: set[str]) -> InlineKeyboardMarkup:
         text= LEXICON['reset_select'],
         callback_data='reset_select'
     )
-    keyboard[0].append([reset_select])
-    keyboard[0].append([kb_cancel_button()])
+    keyboard.append([reset_select])
+    keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -121,8 +121,8 @@ def kb_delete_chat(chats: set[str]) -> InlineKeyboardMarkup:
         text= LEXICON['confirm_select'],
         callback_data='confirm_select'
     )
-    keyboard[0].append([confirm_select])
-    keyboard[0].append([kb_cancel_button()])
+    keyboard.append([confirm_select])
+    keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -148,6 +148,18 @@ def kb_menu_chat() -> InlineKeyboardMarkup:
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
+
+# Клавиатура для удаления выбранных чатов
+def kb_delete_one_chat(chats: set[str]) -> InlineKeyboardMarkup:
+    keyboard: list[list[InlineKeyboardButton]] = []
+    for chat in chats:
+        keyboard.append([InlineKeyboardButton(
+            text= '➖' + chat,
+            callback_data= chat
+        )])
+    keyboard.append([kb_cancel_button()])
+    # Создаем объект инлайн-клавиатуры
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 #  ========= Клавиатуры для работы с воркспейсам =========
 #  =======================================================
@@ -179,7 +191,7 @@ def kb_delete_workspace(workspaces: set[str]) -> InlineKeyboardMarkup:
             text= '➖' + work,
             callback_data= work
         )])
-    keyboard[0].append([kb_cancel_button()])
+    keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
