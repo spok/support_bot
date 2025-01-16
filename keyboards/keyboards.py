@@ -47,11 +47,13 @@ def kb_select_course(courses: set[str]) -> InlineKeyboardMarkup:
     )
     keyboard.append([any_courses])
     if len(courses) > 0:
+        index_course: int = 0
         for course in courses:
             keyboard.append([InlineKeyboardButton(
                 text= course,
-                callback_data= course
+                callback_data= f'course{index_course}'
             )])
+            index_course += 1
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -150,12 +152,13 @@ def kb_menu_chat() -> InlineKeyboardMarkup:
 
 
 # Клавиатура для удаления выбранных чатов
-def kb_delete_one_chat(chats: set[str]) -> InlineKeyboardMarkup:
+def kb_delete_one_chat(chats: dict) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     for chat in chats:
+        chat_name = chats[chat]["name"]
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + chat,
-            callback_data= chat
+            text= '➖' + chat_name,
+            callback_data= str(chat)
         )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
@@ -221,11 +224,13 @@ def kb_menu_course() -> InlineKeyboardMarkup:
 # Клавиатура для удаления выбранных воркспейсов
 def kb_delete_course(courses: set[str]) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
+    index: int = 0
     for course in courses:
         keyboard.append([InlineKeyboardButton(
             text= '➖' + course,
-            callback_data= course
+            callback_data= f'course{index}'
         )])
+        index += 1
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -254,12 +259,12 @@ def kb_menu_admin() -> InlineKeyboardMarkup:
 
 
 # Клавиатура для удаления выбранных воркспейсов
-def kb_delete_admin(admins: set[str]) -> InlineKeyboardMarkup:
+def kb_delete_admin(admins: dict) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
-    for admin in admins:
+    for admin_id in admins:
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + admin,
-            callback_data= admin
+            text= '➖' + admins[admin_id]["name"],
+            callback_data= str(admin_id)
         )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры

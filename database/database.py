@@ -1,4 +1,5 @@
 import sqlite3
+import re
 
 
 class Db:
@@ -48,6 +49,19 @@ class Db:
         finally:
             conn.close()
             print("Соединение с базой закрыто")
+        # Добавление администратора по умолчанию
+        conn = None
+        for admin in self.admins:
+            try:
+                conn = sqlite3.connect(self.db_name)
+                cursor = conn.cursor()
+                insert_query = """INSERT INTO admins (ID, name) VALUES (?, ?)"""
+                cursor.execute(insert_query, (admin, self.admins[admin]["name"]))
+                conn.commit()
+            except Exception as error:
+                print("Ошибка при добавлении в таблицу нового администратора", error)
+            finally:
+                conn.close()
 
     def load_db(self):
         """Загрузка данных из базы данных"""
@@ -124,21 +138,29 @@ class Db:
             all_chats.add(self.chats[key]["name"])
         return all_chats
 
-    def del_chat(self, name: str):
+    def get_chats_id(self) -> set:
+        """Возвращает кортеж из идентификаторов чата"""
+        all_chats_id: set = set()
+        for key in self.chats:
+            all_chats_id.add(key)
+        return all_chats_id
+
+    def get_chat_name(self, chat_id: int) -> str:
+        """Возвращает название чата по его идентификатору"""
+        return self.chats[chat_id]["name"]
+
+    def del_chat(self, chat_id: int):
         """Удаляет чат по имени"""
         # Удаление чата из переменной
-        del_key: int = 0
-        for key in self.chats:
-            if self.chats[key]["name"] == name:
-                del_key = key
-        del self.chats[del_key]
+        if chat_id in self.chats:
+            del self.chats[chat_id]
         # Удаление чата из таблицы БД
         conn = None
         try:
             conn = sqlite3.connect(self.db_name)
             cursor = conn.cursor()
-            insert_query = """DELETE FROM chats WHERE name = ?"""
-            cursor.execute(insert_query, (name,))
+            insert_query = """DELETE FROM chats WHERE ID = ?"""
+            cursor.execute(insert_query, (chat_id,))
             conn.commit()
         except Exception as error:
             print("Ошибка при удалении чата", error)
@@ -188,6 +210,7 @@ class Db:
 
     def get_workspaces(self) -> set[str]:
         """Возвращает кортеж из списка названий воркспейсов"""
+        print(set(self.workspaces))
         return set(self.workspaces)
 
     def add_course(self, name: str):
@@ -207,10 +230,12 @@ class Db:
             finally:
                 conn.close()
 
-    def del_course(self, name: str):
+    def del_course(self, name: str) -> str:
         """Удаление курса"""
+        course_index: int = int(name[6:])
+        course_name: str = self.courses[course_index]
         try:
-            self.courses.remove(name)
+            del self.courses[course_index]
         except:
             print("Удяляемый курс отсутсвует в базе данных")
         # Удаление курса из таблицы БД
@@ -219,12 +244,13 @@ class Db:
             conn = sqlite3.connect(self.db_name)
             cursor = conn.cursor()
             insert_query = """DELETE FROM courses WHERE name = ?"""
-            cursor.execute(insert_query, (name,))
+            cursor.execute(insert_query, (course_name,))
             conn.commit()
         except Exception as error:
             print("Ошибка при удалении курса", error)
         finally:
             conn.close()
+        return course_name
 
     def check_course(self, name: str) -> bool:
         """Проверка курса на наличие в базе данных"""
@@ -236,6 +262,10 @@ class Db:
     def get_course(self) -> set:
         """Возвращает кортеж из списка курсов"""
         return set(self.courses)
+
+    def get_course_name(self, course_index: str) -> str:
+        """Возвращает название курса по его calback_data"""
+        return self.courses[int(course_index[6:])]
 
     def add_admin(self, id: int, name: str):
         """Добавление администратора бота"""
@@ -266,12 +296,10 @@ class Db:
             admins_name.add(self.admins[key]["name"])
         return admins_name
 
-    def del_admin(self, name: str):
+    def del_admin(self, name: str) -> str:
         """Удаляет администратора по его имени"""
-        del_id: int = 0
-        for key in self.admins:
-            if self.admins[key]["name"] == name:
-                del_id = key
+        del_id: int = int(name)
+        del_name = self.admins[del_id]["name"]
         if del_id in self.admins and len(self.admins) > 1:
             del self.admins[del_id]
             # Удаление курса из таблицы БД
@@ -280,12 +308,16 @@ class Db:
                 conn = sqlite3.connect(self.db_name)
                 cursor = conn.cursor()
                 insert_query = """DELETE FROM admins WHERE ID = ?"""
-                cursor.execute(insert_query, (id,))
+                cursor.execute(insert_query, (del_id,))
                 conn.commit()
             except Exception as error:
                 print("Ошибка при удалении администратора чата", error)
             finally:
                 conn.close()
+        return del_name
 
+def escape_markdown(text: str) -> str:
+  escape_chars = r"\_*[]()~`>#+-=|{}.!"
+  return re.sub(f"([{re.escape(escape_chars)}])", r"\\\1", text)
 
 bot_db = Db()

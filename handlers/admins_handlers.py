@@ -3,7 +3,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.types import (CallbackQuery, Message, ReplyKeyboardRemove)
-from database.database import bot_db
+from database.database import bot_db, escape_markdown
 from lexicon.lexicon import LEXICON
 import keyboards.keyboards as kb
 
@@ -73,7 +73,7 @@ async def get_name_admin(message: Message, state: FSMContext):
                 F.data.in_(['del_admin']))
 async def select_del_admin(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    markup = kb.kb_delete_admin(bot_db.get_admins_name())
+    markup = kb.kb_delete_admin(bot_db.admins)
     await callback.message.answer(text=LEXICON['select_del_admin_message'], reply_markup=markup)
     # Устанавливаем состояние ожидания ввода идентификатора чата
     await state.set_state(FSMAddAdmin.del_admin)
@@ -86,8 +86,8 @@ async def del_admin(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()
     if admin_name != "cancel":
         # Обработка удаления админа
-        bot_db.del_admin(admin_name)
-        new_text = LEXICON['del_admin_message'] + f'*{admin_name}*'
+        del_name = bot_db.del_admin(admin_name)
+        new_text = LEXICON['del_admin_message'] + f'*{escape_markdown(del_name)}*'
         await callback.message.answer(text=new_text, parse_mode='MarkdownV2')
     # Выходим из состояния
     await state.clear()
@@ -107,8 +107,7 @@ async def cancel_admin_menu(callback: CallbackQuery, state: FSMContext):
 async def cancel_other(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         text=callback.message.text + " ")
-    #await callback.message.delete()
-    await callback.message.answer(text='Добавление администратора отменено.')
+    await callback.message.answer(text=LEXICON['cancel_del_admin'])
     await state.clear()
 
 

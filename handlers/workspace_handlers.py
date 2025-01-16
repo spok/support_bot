@@ -40,7 +40,7 @@ async def cancel_workspace_menu(callback: CallbackQuery, state: FSMContext):
 
 # Хэндлер для обработки ввода текста при активном меню чата
 @router.message(StateFilter(FSMAddWorkspace.select_action), F.from_user.id.in_(bot_db.get_admins_id()))
-async def cancel_menu_workspace(message: Message, state: FSMContext):
+async def message_menu_workspace(message: Message, state: FSMContext):
     await message.answer(text=LEXICON['wrong_message_menu'])
     # Переходим в состояние меню чата
     await state.set_state(FSMAddWorkspace.select_action)
