@@ -5,7 +5,7 @@ from lexicon.lexicon import LEXICON
 # Создание кнопки отмены действия
 def kb_cancel_button() -> InlineKeyboardButton:
     return InlineKeyboardButton(
-        text= LEXICON['cancel'],
+        text=LEXICON['cancel'],
         callback_data='cancel'
     )
 
@@ -23,15 +23,15 @@ def kb_select_workspace(work: set[str]) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     # Создаем объекты инлайн-кнопок
     any_workspace = InlineKeyboardButton(
-        text= LEXICON['any'],
+        text=LEXICON['any'],
         callback_data='any'
     )
     keyboard.append([any_workspace])
-    if type(work) == set and len(work) > 0:
+    if type(work) is set and len(work) > 0:
         for w in work:
             keyboard.append([InlineKeyboardButton(
-                text= w,
-                callback_data= w
+                text=w,
+                callback_data=w
             )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
@@ -42,7 +42,7 @@ def kb_select_workspace(work: set[str]) -> InlineKeyboardMarkup:
 def kb_select_course(courses: set[str]) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     any_courses = InlineKeyboardButton(
-        text= LEXICON['any'],
+        text=LEXICON['any'],
         callback_data='any'
     )
     keyboard.append([any_courses])
@@ -50,8 +50,8 @@ def kb_select_course(courses: set[str]) -> InlineKeyboardMarkup:
         index_course: int = 0
         for course in courses:
             keyboard.append([InlineKeyboardButton(
-                text= course,
-                callback_data= f'course{index_course}'
+                text=course,
+                callback_data=f'course{index_course}'
             )])
             index_course += 1
     keyboard.append([kb_cancel_button()])
@@ -60,25 +60,25 @@ def kb_select_course(courses: set[str]) -> InlineKeyboardMarkup:
 
 
 # Клавиатура для выбора чатов
-def kb_select_chat(chats: set[str]) -> InlineKeyboardMarkup:
+def kb_select_chat(chats: dict) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     all_select = InlineKeyboardButton(
-        text= LEXICON['all_select'],
-        callback_data='all_select'
+        text=LEXICON['all_select'],
+        callback_data='any'
     )
     keyboard.append([all_select])
     for chat in chats:
         keyboard.append([InlineKeyboardButton(
-            text= '➕' + chat,
-            callback_data= chat
+            text='➕' + chats[chat]["name"],
+            callback_data=str(chat)
         )])
     confirm_select = InlineKeyboardButton(
-        text= LEXICON['confirm_select'],
+        text=LEXICON['confirm_select'],
         callback_data='confirm_select'
     )
     keyboard.append([confirm_select])
     reset_select = InlineKeyboardButton(
-        text= LEXICON['reset_select'],
+        text=LEXICON['reset_select'],
         callback_data='reset_select'
     )
     keyboard.append([reset_select])
@@ -95,11 +95,11 @@ def kb_confirm_send() -> InlineKeyboardMarkup:
         callback_data='confirm_send'
     )
     add_chat = InlineKeyboardButton(
-        text= LEXICON['add_chat'],
+        text=LEXICON['add_chat'],
         callback_data='add_chat'
     )
     delete_chat = InlineKeyboardButton(
-        text= LEXICON['delete_chat'],
+        text=LEXICON['delete_chat'],
         callback_data='delete_chat'
     )
     keyboard: list[list[InlineKeyboardButton]] = [
@@ -112,15 +112,15 @@ def kb_confirm_send() -> InlineKeyboardMarkup:
 
 
 # Клавиатура для удаления выбранных чатов
-def kb_delete_chat(chats: set[str]) -> InlineKeyboardMarkup:
+def kb_delete_chat(chats: dict) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     for chat in chats:
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + chat,
-            callback_data= chat
+            text='➖' + chats[chat]["name"],
+            callback_data=chat
         )])
     confirm_select = InlineKeyboardButton(
-        text= LEXICON['confirm_select'],
+        text=LEXICON['confirm_select'],
         callback_data='confirm_select'
     )
     keyboard.append([confirm_select])
@@ -136,11 +136,11 @@ def kb_delete_chat(chats: set[str]) -> InlineKeyboardMarkup:
 def kb_menu_chat() -> InlineKeyboardMarkup:
     # Создаем объекты инлайн-кнопок
     add_chat = InlineKeyboardButton(
-        text= LEXICON['add_chat'],
+        text=LEXICON['add_chat'],
         callback_data='add_chat'
     )
     delete_chat = InlineKeyboardButton(
-        text= LEXICON['delete_chat'],
+        text=LEXICON['delete_chat'],
         callback_data='delete_chat'
     )
     keyboard: list[list[InlineKeyboardButton]] = [
@@ -157,12 +157,50 @@ def kb_delete_one_chat(chats: dict) -> InlineKeyboardMarkup:
     for chat in chats:
         chat_name = chats[chat]["name"]
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + chat_name,
-            callback_data= str(chat)
+            text='➖' + chat_name,
+            callback_data=str(chat)
         )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+#  ========== Клавиатуры для работы с группами ===========
+#  =======================================================
+
+# Создание клавиатуры с меню управления группами
+def kb_menu_group() -> InlineKeyboardMarkup:
+    # Создаем объекты инлайн-кнопок
+    add_workspace = InlineKeyboardButton(
+        text=LEXICON['add_group'],
+        callback_data='add_group'
+    )
+    delete_workspace = InlineKeyboardButton(
+        text=LEXICON['del_group'],
+        callback_data='del_group'
+    )
+    keyboard: list[list[InlineKeyboardButton]] = [
+        [add_workspace], [delete_workspace],
+        [kb_cancel_button()]
+    ]
+    # Создаем объект инлайн-клавиатуры
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+# Клавиатура для удаления выбранных групп
+def kb_delete_group(groups: list[str]) -> InlineKeyboardMarkup:
+    keyboard: list[list[InlineKeyboardButton]] = []
+    index: int = 0
+    for group in groups:
+        keyboard.append([InlineKeyboardButton(
+            text='➖' + group,
+            callback_data=f'group{index}'
+        )])
+        index += 1
+    keyboard.append([kb_cancel_button()])
+    # Создаем объект инлайн-клавиатуры
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
 
 #  ========= Клавиатуры для работы с воркспейсам =========
 #  =======================================================
@@ -171,11 +209,11 @@ def kb_delete_one_chat(chats: dict) -> InlineKeyboardMarkup:
 def kb_menu_workspace() -> InlineKeyboardMarkup:
     # Создаем объекты инлайн-кнопок
     add_workspace = InlineKeyboardButton(
-        text= LEXICON['add_workspace'],
+        text=LEXICON['add_workspace'],
         callback_data='add_workspace'
     )
     delete_workspace = InlineKeyboardButton(
-        text= LEXICON['del_workspace'],
+        text=LEXICON['del_workspace'],
         callback_data='del_workspace'
     )
     keyboard: list[list[InlineKeyboardButton]] = [
@@ -191,8 +229,8 @@ def kb_delete_workspace(workspaces: set[str]) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     for work in workspaces:
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + work,
-            callback_data= work
+            text='➖' + work,
+            callback_data=work
         )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры
@@ -206,11 +244,11 @@ def kb_delete_workspace(workspaces: set[str]) -> InlineKeyboardMarkup:
 def kb_menu_course() -> InlineKeyboardMarkup:
     # Создаем объекты инлайн-кнопок
     add_course = InlineKeyboardButton(
-        text= LEXICON['add_course'],
+        text=LEXICON['add_course'],
         callback_data='add_course'
     )
     delete_course = InlineKeyboardButton(
-        text= LEXICON['del_course'],
+        text=LEXICON['del_course'],
         callback_data='del_course'
     )
     keyboard: list[list[InlineKeyboardButton]] = [
@@ -227,8 +265,8 @@ def kb_delete_course(courses: set[str]) -> InlineKeyboardMarkup:
     index: int = 0
     for course in courses:
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + course,
-            callback_data= f'course{index}'
+            text='➖' + course,
+            callback_data=f'course{index}'
         )])
         index += 1
     keyboard.append([kb_cancel_button()])
@@ -243,11 +281,11 @@ def kb_delete_course(courses: set[str]) -> InlineKeyboardMarkup:
 def kb_menu_admin() -> InlineKeyboardMarkup:
     # Создаем объекты инлайн-кнопок
     add_admin = InlineKeyboardButton(
-        text= LEXICON['add_admin'],
+        text=LEXICON['add_admin'],
         callback_data='add_admin'
     )
     del_admin = InlineKeyboardButton(
-        text= LEXICON['del_admin'],
+        text=LEXICON['del_admin'],
         callback_data='del_admin'
     )
     keyboard: list[list[InlineKeyboardButton]] = [
@@ -263,8 +301,8 @@ def kb_delete_admin(admins: dict) -> InlineKeyboardMarkup:
     keyboard: list[list[InlineKeyboardButton]] = []
     for admin_id in admins:
         keyboard.append([InlineKeyboardButton(
-            text= '➖' + admins[admin_id]["name"],
-            callback_data= str(admin_id)
+            text='➖' + admins[admin_id]["name"],
+            callback_data=str(admin_id)
         )])
     keyboard.append([kb_cancel_button()])
     # Создаем объект инлайн-клавиатуры

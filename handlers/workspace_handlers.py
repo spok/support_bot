@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
-from aiogram.types import (CallbackQuery, Message, ReplyKeyboardRemove)
+from aiogram.types import CallbackQuery, Message
 from database.database import bot_db
 from lexicon.lexicon import LEXICON
 import keyboards.keyboards as kb

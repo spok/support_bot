@@ -1,13 +1,15 @@
 import sqlite3
 import re
+from copy import deepcopy
 
 
 class Db:
     def __init__(self):
         self.db_name = 'data.db'
         self.chats: dict = {}
-        self.workspaces: list = []
-        self.courses: list = []
+        self.workspaces: list[str] = []
+        self.courses: list[str] = []
+        self.groups: list[str] = []
         self.admins: dict = {783188960: {"name": "Власов Слава"}}
         self.create_table()
         self.load_db()
@@ -23,11 +25,18 @@ class Db:
                                   (ID                INTEGER PRIMARY KEY NOT NULL,
                                   name             TEXT    NOT NULL,
                                   workspace               TEXT    NOT NULL,
+                                  group               TEXT    NOT NULL,
                                   course        TEXT NOT NULL);"""
             cursor.execute(create_table_query)
             conn.commit()
             # создание таблицы с воркспейсами
             create_table_query = """CREATE TABLE IF NOT EXISTS workspaces
+                                  (ID                INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                  name             TEXT    NOT NULL);"""
+            cursor.execute(create_table_query)
+            conn.commit()
+            # создание таблицы с группами
+            create_table_query = """CREATE TABLE IF NOT EXISTS groups
                                   (ID                INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                   name             TEXT    NOT NULL);"""
             cursor.execute(create_table_query)
@@ -79,7 +88,8 @@ class Db:
                 self.chats[elem[0]] = {
                     "name": elem[1],
                     "workspace": elem[2],
-                    "course": elem[3]
+                    "group": elem[3],
+                    "course": elem[4]
                 }
 
             # Загрузка воркспейсов
@@ -88,6 +98,13 @@ class Db:
             record = cursor.fetchall()
             for elem in record:
                 self.workspaces.append(elem[1])
+
+            # Загрузка групп
+            query_chats = """SELECT * FROM groups;"""
+            cursor.execute(query_chats)
+            record = cursor.fetchall()
+            for elem in record:
+                self.groups.append(elem[1])
 
             # Загрузка курсов
             query_chats = """SELECT * FROM courses;"""
@@ -109,22 +126,23 @@ class Db:
         finally:
             conn.close()
 
-    def add_chats(self, id: int, name: str, workspace: str, course: str):
+    def add_chats(self, id: int, name: str, workspace: str, course: str, group: str):
         """Добавление нового чата"""
         # Добавление в переменную с чатами
         if id not in self.chats:
             self.chats[id] = {
                 "name": name,
                 "workspace": workspace,
-                "course": course
+                "course": course,
+                "group": group
             }
             # Добавление в базу данных
             conn = None
             try:
                 conn = sqlite3.connect(self.db_name)
                 cursor = conn.cursor()
-                insert_query = """INSERT INTO chats(ID, name, workspace, course) VALUES (?, ?, ?, ?)"""
-                cursor.execute(insert_query, (id, name, workspace, course))
+                insert_query = """INSERT INTO chats(ID, name, group, workspace, course) VALUES (?, ?, ?, ?, ?)"""
+                cursor.execute(insert_query, (id, name, group, workspace, course))
                 conn.commit()
             except Exception as error:
                 print("Ошибка при добавлении в таблицу нового чата", error)
@@ -137,6 +155,27 @@ class Db:
         for key in self.chats:
             all_chats.add(self.chats[key]["name"])
         return all_chats
+
+    def get_filter_chats(self, workspace: str, course: str, group: str) -> dict:
+        """Возвращает список чатов отфильтрованных по параметрам"""
+        filter_chats = deepcopy(self.chats)
+        del_id: set[int] = set()       # Кортеж идентификаторов чатов для удаления
+        # Заполняем кортеж с идентификаторов чатов, которые не соответствуют фильтрам
+        for chat_id in filter_chats:
+            # Проверка на соответсвие чата фильтру вокрспейса, группы и курса
+            if workspace not in 'any':
+                if filter_chats[chat_id]["workspace"] not in workspace:
+                    del_id.add(chat_id)
+            if group not in 'any':
+                if filter_chats[chat_id]["group"] not in group:
+                    del_id.add(chat_id)
+            if course not in 'any':
+                if filter_chats[chat_id]["course"] not in course:
+                    del_id.add(chat_id)
+        # Удаляем в копии чаты, которые не соответсвуют фильтрам
+        for chat in del_id:
+            del filter_chats[chat]
+        return filter_chats
 
     def get_chats_id(self) -> set:
         """Возвращает кортеж из идентификаторов чата"""
@@ -166,6 +205,58 @@ class Db:
             print("Ошибка при удалении чата", error)
         finally:
             conn.close()
+
+    # ========== Работа с группами ==========
+    # =======================================
+
+    def add_group(self, name: str):
+        """Добавление новой группы"""
+        if name not in self.groups:
+            # Добавление в переменную с группами
+            self.groups.append(name)
+            # Добавление в таблицу БД
+            conn = None
+            try:
+                conn = sqlite3.connect(self.db_name)
+                cursor = conn.cursor()
+                insert_query = """INSERT INTO groups (name) VALUES (?)"""
+                cursor.execute(insert_query, (name, ))
+                conn.commit()
+            except Exception as error:
+                print("Ошибка при добавлении в таблицу новоой группы", error)
+            finally:
+                conn.close()
+
+    def check_group(self, name: str) -> bool:
+        """Проверка группы на наличие в базе данных"""
+        return name in self.groups
+
+
+    def del_group(self, name: str) -> str:
+        """Удаление группы"""
+        group_index: int = int(name[5:])
+        group_name: str = self.groups[group_index]
+        try:
+            del self.groups[group_index]
+        except:
+            print("Удяляемая группв отсутсвует в базе данных")
+        # Удаление группы из таблицы БД
+        conn = None
+        try:
+            conn = sqlite3.connect(self.db_name)
+            cursor = conn.cursor()
+            insert_query = """DELETE FROM groups WHERE name = ?"""
+            cursor.execute(insert_query, (group_name,))
+            conn.commit()
+        except Exception as error:
+            print("Ошибка при удалении группы", error)
+        finally:
+            conn.close()
+        return group_name
+
+
+    # ========== Работа с воркспейсами ==========
+    # ===========================================
 
     def add_workspaces(self, name: str):
         """Добавление воркспейса"""
@@ -254,10 +345,7 @@ class Db:
 
     def check_course(self, name: str) -> bool:
         """Проверка курса на наличие в базе данных"""
-        for elem in self.courses:
-            if name == elem:
-                return True
-        return False
+        return name in self.courses
 
     def get_course(self) -> set:
         """Возвращает кортеж из списка курсов"""

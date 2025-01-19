@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
-from aiogram.types import (CallbackQuery, Message)
+from aiogram.types import CallbackQuery, Message
 from database.database import bot_db, escape_markdown
 from lexicon.lexicon import LEXICON
 import keyboards.keyboards as kb
@@ -127,7 +127,12 @@ async def message_in_select_workspace(message: Message, state: FSMContext):
 # Хэндлер для сохранения данных чата
 @router.callback_query(StateFilter(FSMAddChats.select_course))
 async def chat_save_in_db(callback: CallbackQuery, state: FSMContext):
-    course_name: str = bot_db.get_course_name(callback.data)
+    callback_answer = callback.data
+    course_name: str = ""
+    if callback_answer.startswith("course"):
+        course_name = bot_db.get_course_name(callback_answer)
+    else:
+        course_name = callback_answer
     # Сохраняем чат в базе данных
     data = await state.get_data()
     id_chat: int = int(data.get("id"))
